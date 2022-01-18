@@ -13,13 +13,27 @@ ed = np.matrix([[1.572584629058838], [-1.566467599277832], [-0.00261497497558593
                     [-0.009446446095601857], [0.007950782775878906]])
 
 def jacobian_solution(config_matrix, joints, theta_angles):
-    joints = joints - 1
-    p0 = np.matrix([[0],[0],[0]])
+    jacobian = np.matrix(np.zeros([6, joints]))
+    #p0 = np.matrix([[0],[0],[0]])
     z0 = np.matrix([[0],[0],[1]])
+
+    joints = joints - 1
     p6 = transformation_matrix(config_matrix, joints, theta_angles)[:3,3]
 
     
+    for i in range(6):
+        tm = transformation_matrix(config_matrix, i, theta_angles)
+        # print(jacobian)
+        # print(tm)
+        # print()
+        # print(np.cross(tm[:3,2].T,(p6 - tm[:3,3]).T).T)
+        # print(tm[:2,2])
+        # break
+        # break
+        # print(p6 - tm[:3,3])
+        jacobian[:3,i] = np.cross(tm[:3,2].T,(p6 - tm[:3,3]).T).T
+        jacobian[3:,i] = tm[:3,2]
 
-    print(p6)
+    print(jacobian)
 
 jacobian_solution(config_matrix, 6, ed)
