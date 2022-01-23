@@ -1,6 +1,7 @@
+from forward_kinematics import forward_kinematics_solution
+from forward_kinematics import transformation_matrix
 import numpy as np
 from math import pi
-from forward_kinematics import transformation_matrix
 
 config_matrix = np.matrix([[0, pi/2.0, 0.1625],
                         [-0.425, 0, 0],
@@ -18,19 +19,10 @@ def jacobian_solution(config_matrix, joints, theta_angles):
     z0 = np.matrix([[0],[0],[1]])
 
     joints = joints - 1
-    p6 = transformation_matrix(config_matrix, joints, theta_angles)[:3,3]
+    p6 = forward_kinematics_solution(config_matrix, theta_angles)[:3,3]
 
-    
-    for i in range(6):
-        tm = transformation_matrix(config_matrix, i, theta_angles)
-        # print(jacobian)
-        # print(tm)
-        # print()
-        # print(np.cross(tm[:3,2].T,(p6 - tm[:3,3]).T).T)
-        # print(tm[:2,2])
-        # break
-        # break
-        # print(p6 - tm[:3,3])
+    for i in range(1, joints):
+        tm = forward_kinematics_solution(config_matrix, i, theta_angles)
         jacobian[:3,i] = np.cross(tm[:3,2].T,(p6 - tm[:3,3]).T).T
         jacobian[3:,i] = tm[:3,2]
 
