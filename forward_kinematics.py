@@ -8,7 +8,6 @@ def transformation_matrix(config_matrix, n, theta_angles = np.matrix([[0],[0],[0
                         [sin(theta_angles[n]), cos(theta_angles[n]), 0, 0],
                         [0, 0, 1, 0],
                         [0, 0, 0, 1]])
-    # T_z_th = np.matrix([[cos(theta_angles[n]), -sin(theta_angles[n]), 0, 0], [sin(theta_angles[n]), cos(theta_angles[n]), 0, 0],[0, 0, 1, 0],[0, 0, 0, 1]])
 
     T_z_d = np.matrix(np.identity(4))
     T_z_d[2,3] = config_matrix[n,2]
@@ -21,12 +20,9 @@ def transformation_matrix(config_matrix, n, theta_angles = np.matrix([[0],[0],[0
     T_final = T_z_th*T_z_d*T_x_a*T_x_alpha
     return T_final
 
-def forward_kinematics_solution(config_matrix, theta_angles):
-    T01 = transformation_matrix(config_matrix, 1, theta_angles)
-    T02 = transformation_matrix(config_matrix, 2, theta_angles)
-    T03 = transformation_matrix(config_matrix, 3, theta_angles)
-    T04 = transformation_matrix(config_matrix, 4, theta_angles)
-    T05 = transformation_matrix(config_matrix, 5, theta_angles)
-    T06 = transformation_matrix(config_matrix, 6, theta_angles)
-    T = T01*T02*T03*T04*T05*T06
-    return T
+def forward_kinematics_solution(config_matrix, joints, theta_angles):
+    T_final = np.matrix(np.eye(4, dtype=int))
+    for i in range(1,joints+1):
+        T_cur = transformation_matrix(config_matrix, i, theta_angles)
+        T_final = T_final * T_cur
+    return T_final
