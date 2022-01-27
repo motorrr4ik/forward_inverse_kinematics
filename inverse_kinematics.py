@@ -9,9 +9,10 @@ def inverse_kinematics(config_matrix, transformation_mat):
     T = transformation_mat
 
     #theta 1
-    P_05 = T * np.matrix([[0],[0], [-config_matrix[5,2]], [1]])
+    P_05 = T.dot(np.array([[0],[0], [-config_matrix[5,2]], [1]]))
+
     psi = atan2(P_05[1], P_05[0])
-    phi = acos(config_matrix[3,2] /sqrt(P_05[0]**2 + P_05[1]**2))
+    phi = acos(config_matrix[3,2]/sqrt(P_05[0]**2 + P_05[1]**2))
     theta[0, 0:4] = psi + phi + pi/2
     theta[0, 4:8] = psi + phi + pi/2
     #----------------------------------------------------------------------------
@@ -44,8 +45,8 @@ def inverse_kinematics(config_matrix, transformation_mat):
         T01 = transformation_matrix(config_matrix, 1, theta[:, i])
         T45 = transformation_matrix(config_matrix, 5, theta[:, i])
         T56 = transformation_matrix(config_matrix, 6, theta[:, i])
-        T14 = linalg.inv(T01) * T * linalg.inv(T45 * T56)
-        P14 = T14 * np.matrix([[0], [-config_matrix[3, 2]], [0], [1]])
+        T14 = linalg.inv(T01).dot(T).dot(linalg.inv(T45.dot(T56)))
+        P14 = T14.dot(np.array([[0], [-config_matrix[3, 2]], [0], [1]]))
         costh3 = ((P14[0] ** 2 + P14[1] ** 2 - config_matrix[1, 0] ** 2 - config_matrix[2, 0] ** 2) /
                   (2 * config_matrix[1, 0] * config_matrix[2, 0]))
         if 1 >= costh3 >= -1:
@@ -60,14 +61,14 @@ def inverse_kinematics(config_matrix, transformation_mat):
         T01 = transformation_matrix(config_matrix, 1, theta[:, i])
         T45 = transformation_matrix(config_matrix, 5, theta[:, i])
         T56 = transformation_matrix(config_matrix, 6, theta[:, i])
-        T14 = linalg.inv(T01) * T * linalg.inv(T45 * T56)
-        P13 = T14 * np.matrix([[0], [-config_matrix[3, 2]], [0], [1]])
+        T14 = linalg.inv(T01).dot(T).dot(linalg.inv(T45.dot(T56)))
+        P13 = T14.dot(np.array([[0], [-config_matrix[3, 2]], [0], [1]]))
 
         theta[1, i] = atan2(-P13[1], -P13[0]) - asin(
             -config_matrix[2, 0] * sin(theta[2, i]) / sqrt(P13[0] ** 2 + P13[1] ** 2)
         )
         T32 = linalg.inv(transformation_matrix(config_matrix, 3, theta[:, i]))
         T21 = linalg.inv(transformation_matrix(config_matrix, 2, theta[:, i]))
-        T34 = T32 * T21 * T14
+        T34 = T32.dot(T21).dot(T14)
         theta[3, i] = atan2(T34[1, 0], T34[0, 0]) 
     return theta
