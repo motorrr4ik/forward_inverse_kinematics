@@ -32,7 +32,7 @@ def jacobian_solution(config_matrix, joints, theta_angles):
     return jacobian
 
 def jacobian_test():
-    T = 0.05
+    T = 1e-3
     time = np.arange(1, 16, T)
     q = np.zeros((len(time), 6))
     dot_q = np.zeros((len(time),6))
@@ -67,16 +67,16 @@ def jacobian_test():
     # print(dot_x_arr)
     # dot_x_arr = np.array(dot_x_arr)[:, :, 0].T
     # print(dot_x_arr)
-    diff_matrix = jacobian_dot_x[:3, :299] - new_dot_x
+    diff_matrix = jacobian_dot_x[:3, :np.shape(new_dot_x)[1]] - new_dot_x
     dot_x_arr = np.array(jacobian_dot_x)
     plt.grid(True)
 
-    plt.plot(np.array(dot_x_arr[0, :]).flatten(), label = 'x')
-    plt.plot(np.array(new_dot_x[0, :]).flatten())
-    plt.plot(np.array(dot_x_arr[1, :]).flatten(), label = 'y')
-    plt.plot(np.array(new_dot_x[1, :]).flatten())
-    plt.plot(np.array(dot_x_arr[2, :]).flatten(), label = 'z')
-    plt.plot(np.array(new_dot_x[2, :]).flatten())
+    # plt.plot(np.array(dot_x_arr[0, :]).flatten(), label = 'x')
+    # plt.plot(np.array(new_dot_x[0, :]).flatten())
+    # plt.plot(np.array(dot_x_arr[1, :]).flatten(), label = 'y')
+    # plt.plot(np.array(new_dot_x[1, :]).flatten())
+    # plt.plot(np.array(dot_x_arr[2, :]).flatten(), label = 'z')
+    # plt.plot(np.array(new_dot_x[2, :]).flatten())
 
     plt.plot(np.array(diff_matrix[0, :]).flatten(), label = 'e_x')
     plt.plot(np.array(diff_matrix[1, :]).flatten(), label = 'e_y')
