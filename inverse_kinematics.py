@@ -9,12 +9,16 @@ def inverse_kinematics(config_matrix, transformation_mat):
     T = transformation_mat
 
     #theta 1
-    P_05 = T.dot(np.array([[0],[0], [-config_matrix[5,2]], [1]]))
-
+    P_05 = T.dot(np.array([[0],[0], [-config_matrix[5,2]], [1]]))- np.array([[0],[0],[0],[1]])
     psi = atan2(P_05[1], P_05[0])
-    phi = acos(config_matrix[3,2]/sqrt(P_05[0]**2 + P_05[1]**2))
+    if P_05[0]**2 + P_05[1]**2 < config_matrix[3,2]:
+        print("Impossible position")
+        pass
+    else:
+        phi = acos(config_matrix[3,2]/sqrt(P_05[0]**2 + P_05[1]**2))
+    # phi = acos(config_matrix[3,2]/sqrt(P_05[0]**2 + P_05[1]**2))
     theta[0, 0:4] = psi + phi + pi/2
-    theta[0, 4:8] = psi + phi + pi/2
+    theta[0, 4:8] = psi - phi + pi/2
     #----------------------------------------------------------------------------
     #theta 5
     for i in {0, 4}:

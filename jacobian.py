@@ -1,6 +1,6 @@
 from forward_kinematics import forward_kinematics_solution, transformation_matrix
 import numpy as np
-from math import cos, sin, pi
+from math import cos, sin, pi, sqrt
 import matplotlib.pyplot as plt
 
 config_matrix = np.array([[0, pi/2.0, 0.1625],
@@ -10,8 +10,11 @@ config_matrix = np.array([[0, pi/2.0, 0.1625],
                         [0, -pi/2.0, 0.0997],
                         [0, 0, 0.0996]])
 
-ed = np.array([[1.572584629058838], [-1.566467599277832], [-0.0026149749755859375], [-1.568673924808838],
-                    [-0.009446446095601857], [0.007950782775878906]])
+left_ang = np.array([[0.841471], [0.841471], [0.841471], [0.841471],
+                    [0.841471], [0.841471]])
+
+right_ang = np.array([[2*0.841471], [2*0.841471], [2*0.841471], [2*0.841471],
+                    [2*0.841471], [2*0.841471]])
 
 def jacobian_solution(config_matrix, joints, theta_angles):
 
@@ -31,6 +34,21 @@ def jacobian_solution(config_matrix, joints, theta_angles):
     # print(jacobian)
     return jacobian
 
+def coop_jacobian(left_J, right_J):
+    coop_J = np.array(np.zeros((12,12)))
+    coop_J[:6, :6] = 0.5*left_J
+    coop_J[:6, 6:] = 0.5*right_J
+    coop_J[6:,:6] = left_J
+    coop_J[6:,6:] = right_J 
+
+    return coop_J
+
+
+
+
+def manipulability_metrics(jacobian_matrix):
+    return sqrt(np.linalg.det(jacobian_matrix.dot(jacobian_matrix.T)))
+
 def jacobian_test():
     T = 1e-3
     time = np.arange(1, 16, T)
@@ -38,6 +56,8 @@ def jacobian_test():
     dot_q = np.zeros((len(time),6))
     x = np.array(np.zeros((3,len(q))))
     dot_x = np.array(np.zeros((3,len(q))))
+    dot_x_arr = []
+    w_array = [] 
 
     sin_arr = np.sin(time)
     cos_arr = np.cos(time)
@@ -54,10 +74,11 @@ def jacobian_test():
     new_dot_x = np.diff(x)/T
     jacobian_dot_x = np.array(np.zeros((6, len(time))))
 
-    dot_x_arr = []
     for i in range(len(q)-1):
-        jacobian_dot_x[:,i] = jacobian_solution(config_matrix, 6, q[i]).dot(np.array(dot_q[i]).T)
+        cur_J = jacobian_solution(config_matrix, 6, q[i])
+        jacobian_dot_x[:,i] = cur_J.dot(np.array(dot_q[i]).T)
         dot_x_arr.append(jacobian_dot_x[:,i])
+        w_array.append(manipulability_metrics(cur_J))
 
     # print(jacobian_dot_x[:3,:3])
     # print(new_dot_x[:3,:3])
@@ -69,6 +90,7 @@ def jacobian_test():
     # print(dot_x_arr)
     diff_matrix = jacobian_dot_x[:3, :np.shape(new_dot_x)[1]] - new_dot_x
     dot_x_arr = np.array(jacobian_dot_x)
+    w_array = np.array(w_array)
     plt.grid(True)
 
     # plt.plot(np.array(dot_x_arr[0, :]).flatten(), label = 'x')
@@ -78,11 +100,18 @@ def jacobian_test():
     # plt.plot(np.array(dot_x_arr[2, :]).flatten(), label = 'z')
     # plt.plot(np.array(new_dot_x[2, :]).flatten())
 
-    plt.plot(np.array(diff_matrix[0, :]).flatten(), label = 'e_x')
-    plt.plot(np.array(diff_matrix[1, :]).flatten(), label = 'e_y')
-    plt.plot(np.array(diff_matrix[2, :]).flatten(), label = 'e_z')
+    # plt.plot(np.array(diff_matrix[0, :]).flatten(), label = 'e_x')
+    # plt.plot(np.array(diff_matrix[1, :]).flatten(), label = 'e_y')
+    # plt.plot(np.array(diff_matrix[2, :]).flatten(), label = 'e_z')
+    plt.plot(w_array.flatten())
     plt.legend()
     plt.show()
 
-# jacobian_solution(config_matrix, 6, ed)
-jacobian_test()
+if __name__ ==  "__main__":
+    J_left = jacobian_solution(config_matrix, 6, left_ang)
+    J_right = jacobian_solution(config_matrix, 6, right_ang)
+    coop_J = coop_jacobian(J_left, J_right)
+
+# w = manipulability_metrics(J)
+# print(w)
+# jacobian_test()
